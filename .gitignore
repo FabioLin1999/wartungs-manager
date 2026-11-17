@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# IntelliJ
+.idea/
+*.iml
+
+# Maven
+target/
+
+# 本地配置、密码
+.env
