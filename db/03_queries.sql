@@ -76,4 +76,53 @@ FROM machine m
 LEFT JOIN repair r ON r.machine_id = m.id AND  r.status <> 'DONE'
 ORDER BY m.inventory_number;
 
+-------------Tag 5
+SELECT r.status,count(*) as repair_count
+FROM repair r
+GROUP BY r.status
+ORDER BY r.status;
 
+SELECT m.manufacturer,count(*) as machine_number
+FROM machine m
+GROUP BY m.manufacturer
+ORDER BY  machine_number DESC,m.manufacturer;
+
+SELECT m.location, count(m.id) AS machine_count,
+       sum(operating_hours) as total_hours
+     ,round(avg(operating_hours)) AS avg_hours
+     ,max(operating_hours) AS max_hours
+FROM machine m
+GROUP BY m.location
+ORDER BY m.location;
+
+SELECT m.inventory_number,m.name,count(r.id) as repair_count
+FROM machine m
+LEFT JOIN repair r on m.id=r.machine_id
+GROUP BY m.id,m.name,m.inventory_number
+ORDER BY repair_count DESC ,m.inventory_number;
+
+SELECT m.inventory_number,m.name,count(r.id) as repair_count
+FROM machine m
+LEFT JOIN repair r on m.id=r.machine_id
+GROUP BY m.id,m.name,m.inventory_number
+ORDER BY repair_count DESC ,m.inventory_number
+LIMIT 1;
+
+SELECT t.name,count(r.technician_id) as technician_count
+FROM technician t
+LEFT JOIN repair r on r.technician_id=t.id
+GROUP BY t.name,t.id
+ORDER BY technician_count DESC;
+
+SELECT m.inventory_number,count(r.id) as repair_count
+FROM machine m
+JOIN repair r ON r.machine_id=m.id
+GROUP BY m.inventory_number
+HAVING count(r.id) >=2
+ORDER BY repair_count DESC;
+
+SELECT count(r.id) as repair_as_done,t.name
+FROM technician t
+LEFT JOIN repair r ON r.technician_id = t.id AND r.status='DONE'
+GROUP BY t.name,t.id
+ORDER BY repair_as_done DESC
