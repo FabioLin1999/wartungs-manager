@@ -126,3 +126,69 @@ FROM technician t
 LEFT JOIN repair r ON r.technician_id = t.id AND r.status='DONE'
 GROUP BY t.name,t.id
 ORDER BY repair_as_done DESC
+
+------------------- Tag 6
+
+SELECT r.description,(r.completed_at-r.reported_at) as duration
+FROM repair r
+WHERE r.status='DONE'
+ORDER BY duration DESC ;
+
+SELECT avg(r.completed_at-r.reported_at),max(.completed_at)-r.reported_at)
+FROM repair r
+WHERE r.status='DONE';
+
+SELECT r.status,m.inventory_number,r.description,
+       (DATE '2026-11-25'-DATE(r.reported_at)) as days_open
+FROM repair r
+JOIN machine m on r.machine_id=m.id
+WHERE r.status<>'DONE'
+ORDER BY days_open DESC;
+
+SELECT count(*),EXTRACT(MONTH FROM DATE (r.reported_at)) as month
+FROM repair r
+WHERE EXTRACT(YEAR FROM r.reported_at) = 2026
+GROUP BY month
+ORDER BY month ASC ;
+
+SELECT m.inventory_number,
+       mp.task,
+       (mp.last_done_on + mp.interval_days)                            as next_due_on,
+       (mp.last_done_on + mp.interval_days - DATE '2026-11-25')        as days_left,
+       (mp.last_done_at_hours + mp.interval_hours - m.operating_hours) as hours_left
+FROM maintenance_plan mp
+JOIN machine m on mp.machine_id = m.id
+ORDER BY m.inventory_number ASC, mp.task;
+
+
+SELECT m.inventory_number,mp.task,
+       (mp.last_done_on+mp.interval_days) as next_due_on,
+       (mp.last_done_on+mp.interval_days -DATE '2026-11-25') as days_left,
+       (mp.last_done_at_hours+mp.interval_hours-m.operating_hours) as hours_left
+FROM maintenance_plan mp
+JOIN machine m on mp.machine_id = m.id
+WHERE (mp.last_done_on+mp.interval_days -DATE '2026-11-25')<=30
+OR  (mp.last_done_at_hours+mp.interval_hours-m.operating_hours)<=200
+ORDER BY m.inventory_number ASC,mp.task;
+
+
+SELECT m.inventory_number,mp.task,
+ case
+     WHEN (mp.last_done_on+mp.interval_days) < DATE '2026-11-25'or
+          (mp.last_done_at_hours+mp.interval_hours-m.operating_hours)< 0 THEN 'OVERDUE'
+     WHEN (mp.last_done_on+mp.interval_days -DATE '2026-11-25')<=30
+         OR  (mp.last_done_at_hours+mp.interval_hours-m.operating_hours)<=200 THEN 'DUE_SOON'
+     ELSE 'OK'
+     END as staus
+FROM maintenance_plan mp
+         JOIN machine m on mp.machine_id = m.id
+ORDER BY m.inventory_number,mp.task;
+
+SELECT m.inventory_number,
+       mp.task,
+       (mp.last_done_on + mp.interval_days)                            as next_due_on,
+       (mp.last_done_on + mp.interval_days - current_date)             as days_left,
+       (mp.last_done_at_hours + mp.interval_hours - m.operating_hours) as hours_left
+FROM maintenance_plan mp
+         JOIN machine m on mp.machine_id = m.id
+ORDER BY m.inventory_number ASC, mp.task;
