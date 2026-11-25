@@ -31,6 +31,9 @@ create table repair(
      CHECK ( completed_at>=reported_at )
 );
 
+CREATE INDEX idx_repair_machine_id ON repair(machine_id);      -- ← 第 1 个索引写在这里
+CREATE INDEX idx_repair_technician_id ON repair(technician_id);      -- ← 第 2 个索引
+
 create table maintenance_plan(
     id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY ,
     machine_id          BIGINT NOT NULL REFERENCES machine(id),
